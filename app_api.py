@@ -214,7 +214,7 @@ async def virtual_tryon(
     vt_garment_type: str = Form("upper_body"),
     ref_acceleration: bool = Form(False),
     repaint: bool = Form(False),
-    step: int = Form(30),
+    step: int = Form(10),
     scale: float = Form(2.5),
     seed: int = Form(None),  # Changed to None to allow random seed generation
     preprocess_garment: bool = Form(False),

@@ -149,13 +149,16 @@ def get_agnostic_mask_hd(model_parse, keypoint, category, size=(384, 512), model
         parser_mask_changeable += np.logical_and(
             parse_array, np.logical_not(parser_mask_fixed))
     elif category == 'lower_body':
+        # Only include pants, skirt, and dress parts in the parse_mask
         parse_mask = (parse_array == 6).astype(np.float32) + \
                      (parse_array == 12).astype(np.float32) + \
                      (parse_array == 13).astype(np.float32) + \
                      (parse_array == 5).astype(np.float32)
-        parser_mask_fixed += (parse_array == label_map["upper_clothes"]).astype(np.float32) + \
-                             (parse_array == 14).astype(np.float32) + \
+        # Only include arms in the fixed mask, NOT the upper_clothes/torso
+        parser_mask_fixed += (parse_array == 14).astype(np.float32) + \
                              (parse_array == 15).astype(np.float32)
+        # Add upper_clothes to changeable mask instead
+        parser_mask_changeable += (parse_array == label_map["upper_clothes"]).astype(np.float32)
         parser_mask_changeable += np.logical_and(
             parse_array, np.logical_not(parser_mask_fixed))
     else:
@@ -264,7 +267,10 @@ def get_agnostic_mask_dc(model_parse, keypoint, category, size=(384, 512)):
 
     if category == 'dresses':
         label_cat = 7
-        parse_mask = (parse_array == 7).astype(np.float32) + \
+        parse_mask = (parse_array == 4).astype(np.float32) + \
+            (parse_array == 5).astype(np.float32) + \
+            (parse_array == 6).astype(np.float32) + \
+            (parse_array == 7).astype(np.float32) + \
             (parse_array == 12).astype(np.float32) + \
             (parse_array == 13).astype(np.float32)
         parser_mask_changeable += np.logical_and(
