@@ -2,6 +2,10 @@ FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 WORKDIR /app
 
+# Set environment variables for non-interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
