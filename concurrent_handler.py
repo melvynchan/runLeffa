@@ -94,14 +94,9 @@ async def health_check():
 if __name__ == "__main__":
     logger.info(f"Starting RunPod serverless with {NUM_WORKERS} workers")
     
-    # Initialize the handlers
-    handlers = {
-        "health": health_check,
-        "handler": inference
-    }
-    
     # Start the serverless handler
-    runpod.serverless.start(
-        handlers=handlers,
-        concurrency_modifier=NUM_WORKERS
-    )
+    # The older RunPod API uses handler parameter instead of handlers dictionary
+    runpod.serverless.start({
+        "handler": inference,
+        "concurrency_modifier": NUM_WORKERS
+    })
