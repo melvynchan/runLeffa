@@ -2,7 +2,6 @@ import os
 import asyncio
 import runpod
 import logging
-from runpod.serverless.utils.rp_validator import validate
 from handler import handler as single_handler
 
 # Configure logging
@@ -71,16 +70,11 @@ INPUT_SCHEMA = {
     }
 }
 
-# Wrap the handler to validate input
+# Wrap the handler to process input
 async def inference(job):
     try:
-        job_input = job["input"]
-        # Validate the input against our schema
-        validated_input = validate(job_input, INPUT_SCHEMA)
-        if "errors" in validated_input:
-            return {"error": validated_input["errors"]}
-        
-        # Call the original handler
+        # Call the original handler directly
+        # We'll rely on the handler's own validation
         result = single_handler(job)
         return result
     except Exception as e:
