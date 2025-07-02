@@ -194,6 +194,7 @@ class VirtualTryOnResponse(BaseModel):
     generated_image: str
     mask_image: Optional[str] = None
     densepose_image: Optional[str] = None
+    debug_mask_path: Optional[str] = None
 
 # Define available example images
 @app.get("/examples")
@@ -258,12 +259,20 @@ async def virtual_tryon(
             preprocess_garment
         )
         
+        # Save the mask as a temporary file for debugging
+        debug_mask_path = f"debug_mask_{os.urandom(4).hex()}.png"
+        mask.save(debug_mask_path)
+        print(f"Debug mask saved to: {debug_mask_path}")
+        
         # Convert PIL images to base64 for JSON response
         response = VirtualTryOnResponse(
             generated_image=pil_image_to_base64(gen_image),
             mask_image=pil_image_to_base64(mask) if mask else None,
             densepose_image=pil_image_to_base64(densepose) if densepose else None
         )
+        
+        # Add debug mask path to the response
+        response.debug_mask_path = debug_mask_path
         
         return response
         
@@ -286,12 +295,7 @@ async def health_check():
 @app.get("/")
 async def root():
     return {
-        "title": "Leffa: Learning Flow Fields in Attention for Controllable Person Image Generation",
-        "description": "Leffa is a unified framework for controllable person image generation that enables precise manipulation of appearance (i.e., virtual try-on).",
-        "paper": "https://arxiv.org/abs/2412.08486",
-        "code": "https://github.com/franciszzj/Leffa",
-        "model": "https://huggingface.co/franciszzj/Leffa",
-        "note": "The models used in the API are trained solely on academic datasets. Virtual try-on uses VITON-HD/DressCode."
+        "title": "Hello World",
     }
 
 if __name__ == "__main__":

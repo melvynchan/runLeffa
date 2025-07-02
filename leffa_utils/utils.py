@@ -131,11 +131,42 @@ def get_agnostic_mask_hd(model_parse, keypoint, category, size=(384, 512), model
     arms_right = (parse_array == 15).astype(np.float32)
 
     if category == 'dresses':
+        # Create the basic dress mask
         parse_mask = (parse_array == 7).astype(np.float32) + \
                      (parse_array == 4).astype(np.float32) + \
                      (parse_array == 5).astype(np.float32) + \
                      (parse_array == 6).astype(np.float32)
-
+        
+        # Add legs to the mask to ensure coverage between them
+        # Use the correct leg labels (12=left_leg, 13=right_leg) instead of shoes (9,10)
+        legs_mask = (parse_array == 12).astype(np.float32) + \
+                    (parse_array == 13).astype(np.float32)
+        
+        # Create a more aggressive mask for the area between legs
+        # First dilate the legs mask significantly
+        legs_mask_dilated = legs_mask
+        
+        # Create a convex hull of the legs to fill the area between them
+        legs_binary = (legs_mask_dilated > 0).astype(np.uint8) * 255
+        contours, _ = cv2.findContours(legs_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # If contours are found, create a convex hull
+        if contours:
+            hull_mask = np.zeros_like(legs_binary)
+            for contour in contours:
+                if len(contour) >= 3:  # Need at least 3 points for a hull
+                    hull = cv2.convexHull(contour)
+                    cv2.drawContours(hull_mask, [hull], 0, 255, -1)
+            
+            # Convert back to float32 for combining
+            legs_mask_hull = hull_mask.astype(np.float32) / 255.0
+            
+            # Combine with the dress mask
+            parse_mask = np.logical_or(parse_mask, legs_mask_hull).astype(np.float32)
+        else:
+            # If no contours, just use the dilated mask
+            parse_mask = np.logical_or(parse_mask, legs_mask_dilated).astype(np.float32)
+        
         parser_mask_changeable += np.logical_and(
             parse_array, np.logical_not(parser_mask_fixed))
 

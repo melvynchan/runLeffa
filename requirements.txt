@@ -33,3 +33,5 @@ torchvision
 tqdm
 transformers
 uvicorn
+runpod
+asyncio
